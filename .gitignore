@@ -1,0 +1,7 @@
+vendor/
+uploads/
+__pycache__/
+*.pyc
+.DS_Store
+._*
+*.log

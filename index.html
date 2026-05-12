@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nyaya Sahayak — Indian Law Assistant</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #1a1a2e;
+    --sidebar-bg: #16213e;
+    --chat-bg: #0f3460;
+    --surface: #1e2a45;
+    --surface2: #253357;
+    --accent: #e94560;
+    --accent2: #0f8b8d;
+    --text: #e8eaf6;
+    --text-muted: #8892b0;
+    --user-bubble: #0f8b8d;
+    --ai-bubble: #1e2a45;
+    --border: #2a3a5c;
+    --input-bg: #1e2a45;
+    --gold: #ffd700;
+    --radius: 12px;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .profile-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .profile-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center top;
+    border: 2px solid var(--gold);
+    flex-shrink: 0;
+  }
+
+  .profile-info { flex: 1; min-width: 0; }
+
+  .profile-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .profile-role {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  .app-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.5px;
+  }
+
+  .app-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+
+  .sidebar-section {
+    padding: 12px 10px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+  }
+
+  .quick-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 2px 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    text-align: left;
+    transition: background 0.15s;
+    width: calc(100% - 16px);
+  }
+
+  .quick-btn:hover { background: var(--surface2); }
+
+  .quick-btn .icon {
+    font-size: 15px;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 8px 12px;
+  }
+
+  /* API KEY SECTION */
+  .api-section {
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+  }
+
+  .api-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .api-input {
+    width: 100%;
+    padding: 7px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 11px;
+    font-family: monospace;
+    outline: none;
+  }
+
+  .api-input:focus { border-color: var(--accent2); }
+
+  .api-status {
+    font-size: 10px;
+    margin-top: 4px;
+    height: 14px;
+  }
+
+  .api-status.ok { color: #4caf50; }
+  .api-status.err { color: var(--accent); }
+
+  /* DOC SECTION */
+  .doc-section {
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .doc-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+
+  .upload-btn {
+    width: 100%;
+    padding: 7px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+
+  .upload-btn:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    background: var(--surface2);
+  }
+
+  #doc-list {
+    margin-top: 6px;
+    max-height: 100px;
+    overflow-y: auto;
+  }
+
+  .doc-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px;
+    background: var(--surface2);
+    border-radius: 5px;
+    margin-bottom: 3px;
+    font-size: 11px;
+  }
+
+  .doc-item-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    color: var(--accent2);
+  }
+
+  .doc-remove {
+    cursor: pointer;
+    color: var(--text-muted);
+    padding-left: 6px;
+    font-size: 13px;
+  }
+
+  .doc-remove:hover { color: var(--accent); }
+
+  #file-input { display: none; }
+
+  /* MAIN AREA */
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  /* TOP BAR */
+  #topbar {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--sidebar-bg);
+    flex-shrink: 0;
+  }
+
+  .topbar-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .topbar-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .topbar-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .topbar-btn:hover { background: var(--surface2); color: var(--text); }
+
+  /* CHAT */
+  #chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 0;
+    scroll-behavior: smooth;
+  }
+
+  #chat-container::-webkit-scrollbar { width: 4px; }
+  #chat-container::-webkit-scrollbar-track { background: transparent; }
+  #chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .message-row {
+    display: flex;
+    padding: 4px 20px;
+    max-width: 860px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .message-row.user { justify-content: flex-end; }
+  .message-row.ai { justify-content: flex-start; }
+
+  .bubble {
+    max-width: 78%;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: break-word;
+  }
+
+  .bubble.user {
+    background: var(--user-bubble);
+    color: #fff;
+    border-bottom-right-radius: 3px;
+  }
+
+  .bubble.ai {
+    background: var(--ai-bubble);
+    color: var(--text);
+    border-bottom-left-radius: 3px;
+    border: 1px solid var(--border);
+  }
+
+  /* Markdown inside bubbles */
+  .bubble h1, .bubble h2, .bubble h3 {
+    margin: 12px 0 6px;
+    color: var(--gold);
+    font-size: 1em;
+    font-weight: 700;
+  }
+
+  .bubble h1 { font-size: 1.1em; }
+
+  .bubble p { margin: 6px 0; }
+
+  .bubble ul, .bubble ol {
+    padding-left: 18px;
+    margin: 6px 0;
+  }
+
+  .bubble li { margin: 3px 0; }
+
+  .bubble strong { color: var(--gold); font-weight: 600; }
+
+  .bubble em { color: #a8d8ea; font-style: italic; }
+
+  .bubble code {
+    background: #0a1628;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    color: #7ec8e3;
+  }
+
+  .bubble pre {
+    background: #0a1628;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    margin: 10px 0;
+    font-size: 12px;
+  }
+
+  .bubble pre code {
+    background: none;
+    padding: 0;
+    color: #7ec8e3;
+  }
+
+  .bubble blockquote {
+    border-left: 3px solid var(--accent2);
+    padding-left: 12px;
+    margin: 8px 0;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .bubble hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 10px 0;
+  }
+
+  .bubble table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 8px 0;
+    font-size: 12.5px;
+  }
+
+  .bubble th {
+    background: var(--surface2);
+    padding: 6px 10px;
+    text-align: left;
+    border: 1px solid var(--border);
+    color: var(--gold);
+  }
+
+  .bubble td {
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+  }
+
+  .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .avatar.user-av {
+    background: var(--user-bubble);
+    color: #fff;
+    margin-left: 8px;
+  }
+
+  .avatar.ai-av {
+    background: var(--accent);
+    color: #fff;
+    margin-right: 8px;
+  }
+
+  /* WELCOME */
+  #welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .welcome-icon { font-size: 52px; margin-bottom: 16px; }
+
+  .welcome-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .welcome-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    max-width: 460px;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  .suggestion-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    max-width: 600px;
+    width: 100%;
+  }
+
+  .suggestion-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .suggestion-card:hover {
+    border-color: var(--accent2);
+    background: var(--surface2);
+  }
+
+  .suggestion-card .s-icon { font-size: 18px; margin-bottom: 5px; }
+  .suggestion-card .s-title { font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .suggestion-card .s-desc { font-size: 12px; color: var(--text-muted); }
+
+  /* TYPING INDICATOR */
+  #typing-row {
+    display: none;
+    padding: 4px 20px;
+    max-width: 860px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .typing-bubble {
+    background: var(--ai-bubble);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    border-bottom-left-radius: 3px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+    30% { transform: translateY(-5px); opacity: 1; }
+  }
+
+  /* INPUT AREA */
+  #input-area {
+    padding: 12px 20px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--sidebar-bg);
+    flex-shrink: 0;
+  }
+
+  .input-wrapper {
+    max-width: 820px;
+    margin: 0 auto;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 8px 10px 8px 14px;
+    transition: border-color 0.15s;
+  }
+
+  .input-wrapper:focus-within { border-color: var(--accent2); }
+
+  #user-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 14px;
+    font-family: var(--font);
+    resize: none;
+    max-height: 160px;
+    min-height: 22px;
+    line-height: 1.5;
+    padding: 2px 0;
+  }
+
+  #user-input::placeholder { color: var(--text-muted); }
+
+  .attach-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: color 0.15s;
+    flex-shrink: 0;
+    align-self: flex-end;
+    margin-bottom: 1px;
+  }
+
+  .attach-btn:hover { color: var(--accent2); }
+
+  #send-btn {
+    background: var(--accent2);
+    border: none;
+    color: #fff;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    flex-shrink: 0;
+    align-self: flex-end;
+  }
+
+  #send-btn:hover { background: #0a7a7c; }
+  #send-btn:disabled { background: var(--border); cursor: not-allowed; }
+
+  .input-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 6px;
+  }
+
+  /* COPY BUTTON */
+  .copy-btn {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 3px 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-muted);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  #toast.show { opacity: 1; }
+
+  /* SCROLLBAR */
+  #doc-list::-webkit-scrollbar { width: 3px; }
+  #doc-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    #sidebar { display: none; }
+    .suggestion-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-header">
+    <div class="profile-block">
+      <img src="/static/Profilephoto.png" alt="Tamilselvi T" class="profile-avatar" />
+      <div class="profile-info">
+        <div class="profile-name">Tamilselvi T</div>
+        <div class="profile-role">Advocate<br/>Madras High Court</div>
+      </div>
+    </div>
+    <div class="app-title">⚖️ Nyaya Sahayak</div>
+    <div class="app-subtitle">Indian Law Assistant for Advocates</div>
+  </div>
+
+  <div class="sidebar-section">Quick Actions</div>
+
+  <button class="quick-btn" onclick="quickAction('Draft a Vakalatnama for District Court (Civil matter). Please provide the complete format with all required fields.')">
+    <span class="icon">📜</span> Vakalatnama — District Court
+  </button>
+  <button class="quick-btn" onclick="quickAction('Draft a Vakalatnama for High Court. Please provide the complete format including enrollment number fields and all required details.')">
+    <span class="icon">🏛️</span> Vakalatnama — High Court
+  </button>
+  <button class="quick-btn" onclick="quickAction('Draft a Criminal Vakalatnama under Section 302 CrPC for District Court sessions case.')">
+    <span class="icon">⚖️</span> Criminal Vakalatnama
+  </button>
+
+  <div class="sidebar-divider"></div>
+
+  <button class="quick-btn" onclick="quickAction('Draft a Copy Application for obtaining certified copy of a judgment/order from the District Court. Include format, court fee details, and procedure.')">
+    <span class="icon">📋</span> Copy Application
+  </button>
+  <button class="quick-btn" onclick="quickAction('Draft a Copy Application for FIR certified copy under Section 207 CrPC.')">
+    <span class="icon">📑</span> Copy App — FIR/Chargesheet
+  </button>
+
+  <div class="sidebar-divider"></div>
+
+  <button class="quick-btn" onclick="quickAction('Draft an Application for Regular Bail under Section 437/439 CrPC. Provide complete format with grounds and prayer.')">
+    <span class="icon">🔓</span> Bail Application (Sec 437/439)
+  </button>
+  <button class="quick-btn" onclick="quickAction('Draft an Anticipatory Bail Application under Section 438 CrPC with complete format, grounds, and conditions.')">
+    <span class="icon">🛡️</span> Anticipatory Bail (Sec 438)
+  </button>
+  <button class="quick-btn" onclick="quickAction('Draft a Stay Application / Interlocutory Application under Order XXXIX Rules 1 & 2 CPC for temporary injunction.')">
+    <span class="icon">⏸️</span> Stay / Injunction Application
+  </button>
+
+  <div class="sidebar-divider"></div>
+
+  <button class="quick-btn" onclick="quickAction('Draft a Writ Petition (Habeas Corpus / Mandamus / Certiorari) for filing before the High Court. Provide format with index, synopsis, and prayer.')">
+    <span class="icon">📝</span> Writ Petition (HC)
+  </button>
+  <button class="quick-btn" onclick="quickAction('Draft a Legal Notice under Section 80 CPC / demand notice format for a civil dispute.')">
+    <span class="icon">✉️</span> Legal Notice
+  </button>
+  <button class="quick-btn" onclick="quickAction('Explain the procedure and draft an Execution Petition for executing a decree under Order XXI CPC.')">
+    <span class="icon">📌</span> Execution Petition
+  </button>
+
+  <div class="sidebar-divider"></div>
+
+  <button class="quick-btn" onclick="quickAction('What are the Bar Council Rules regarding professional conduct? Summarise key obligations of an advocate under the Bar Council of India Rules.')">
+    <span class="icon">👔</span> Bar Council Rules
+  </button>
+  <button class="quick-btn" onclick="quickAction('Explain the Limitation Act 1963 — important limitation periods for common civil suits, appeals, and applications.')">
+    <span class="icon">⏱️</span> Limitation Periods
+  </button>
+  <button class="quick-btn" onclick="quickAction('What are the court fees payable on common civil suits, appeals, and applications under the Court Fees Act?')">
+    <span class="icon">💰</span> Court Fees Guide
+  </button>
+
+  <!-- DOCUMENT UPLOAD -->
+  <div class="doc-section">
+    <div class="doc-label">📎 Attach Documents (RAG)</div>
+    <div class="upload-btn" onclick="document.getElementById('file-input').click()">
+      + Attach PDF / DOCX / TXT
+    </div>
+    <input type="file" id="file-input" accept=".pdf,.docx,.doc,.txt" multiple onchange="uploadFiles(this.files)" />
+    <div id="doc-list"></div>
+  </div>
+
+  <!-- API KEY -->
+  <div class="api-section">
+    <div class="api-label">🔑 Anthropic API Key</div>
+    <input
+      type="password"
+      id="api-key-input"
+      class="api-input"
+      placeholder="sk-ant-..."
+      autocomplete="off"
+      oninput="saveApiKey(this.value)"
+    />
+    <div id="api-status" class="api-status"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <span class="topbar-title">Indian Law Assistant</span>
+    <div class="topbar-actions">
+      <button class="topbar-btn" onclick="newChat()">＋ New Chat</button>
+      <button class="topbar-btn" onclick="clearDocs()">Clear Docs</button>
+    </div>
+  </div>
+
+  <div id="chat-container">
+    <div id="welcome">
+      <div class="welcome-icon">⚖️</div>
+      <div class="welcome-title">Nyaya Sahayak</div>
+      <div class="welcome-subtitle">
+        Your Indian Law assistant for drafting, procedure, and legal research.
+        Ask anything — vakalatnamas, bail applications, copy applications, court procedures, sections of law.
+      </div>
+      <div class="suggestion-grid">
+        <div class="suggestion-card" onclick="quickAction('Draft a complete Vakalatnama for District Court — Civil matter.')">
+          <div class="s-icon">📜</div>
+          <div class="s-title">Draft Vakalatnama</div>
+          <div class="s-desc">District / High Court formats</div>
+        </div>
+        <div class="suggestion-card" onclick="quickAction('Draft a Bail Application under Section 437 CrPC for a Sessions case.')">
+          <div class="s-icon">🔓</div>
+          <div class="s-title">Bail Application</div>
+          <div class="s-desc">Regular & Anticipatory Bail</div>
+        </div>
+        <div class="suggestion-card" onclick="quickAction('Draft a Copy Application for obtaining certified copy of judgment from District Court.')">
+          <div class="s-icon">📋</div>
+          <div class="s-title">Copy Application</div>
+          <div class="s-desc">Judgments, orders, FIR copies</div>
+        </div>
+        <div class="suggestion-card" onclick="quickAction('What is the procedure and format for filing a Writ Petition in the High Court?')">
+          <div class="s-icon">🏛️</div>
+          <div class="s-title">Writ Petition Guide</div>
+          <div class="s-desc">HC procedure & format</div>
+        </div>
+        <div class="suggestion-card" onclick="quickAction('Explain important limitation periods under the Limitation Act 1963 for civil suits and appeals.')">
+          <div class="s-icon">⏱️</div>
+          <div class="s-title">Limitation Periods</div>
+          <div class="s-desc">Key periods for suits & appeals</div>
+        </div>
+        <div class="suggestion-card" onclick="quickAction('Summarise Bar Council of India Rules on professional conduct for advocates.')">
+          <div class="s-icon">👔</div>
+          <div class="s-title">Professional Conduct</div>
+          <div class="s-desc">BCI Rules & ethics</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TYPING -->
+  <div id="typing-row">
+    <div class="avatar ai-av" style="margin-right:8px;">⚖</div>
+    <div class="typing-bubble">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <!-- INPUT -->
+  <div id="input-area">
+    <div class="input-wrapper">
+      <button class="attach-btn" title="Attach document" onclick="document.getElementById('file-input').click()">📎</button>
+      <textarea
+        id="user-input"
+        placeholder="Ask about vakalatnamas, drafting, bail applications, court procedures..."
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button id="send-btn" onclick="sendMessage()" title="Send">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+    <div class="input-hint">Enter to send · Shift+Enter for new line · 📎 attach docs for RAG</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ---- STATE ----
+let sessionId = localStorage.getItem('lawapp_session') || generateId();
+let uploadedDocs = JSON.parse(localStorage.getItem('lawapp_docs') || '[]');
+let isLoading = false;
+
+localStorage.setItem('lawapp_session', sessionId);
+
+// Load API key
+const savedKey = localStorage.getItem('lawapp_apikey') || '';
+if (savedKey) {
+  document.getElementById('api-key-input').value = savedKey;
+  setApiStatus('ok', '✓ Key saved');
+}
+
+// ---- UTILS ----
+function generateId() {
+  return Math.random().toString(36).substr(2, 12);
+}
+
+function saveApiKey(val) {
+  localStorage.setItem('lawapp_apikey', val);
+  if (val.startsWith('sk-ant-')) {
+    setApiStatus('ok', '✓ Key saved');
+  } else if (val.length > 0) {
+    setApiStatus('err', '✗ Should start with sk-ant-');
+  } else {
+    setApiStatus('', '');
+  }
+}
+
+function setApiStatus(type, msg) {
+  const el = document.getElementById('api-status');
+  el.className = 'api-status ' + type;
+  el.textContent = msg;
+}
+
+function getApiKey() {
+  return document.getElementById('api-key-input').value.trim();
+}
+
+function showToast(msg, ms = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), ms);
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+// ---- CHAT ----
+function hideWelcome() {
+  const w = document.getElementById('welcome');
+  if (w) w.remove();
+}
+
+function appendMessage(role, text) {
+  hideWelcome();
+  const container = document.getElementById('chat-container');
+  const row = document.createElement('div');
+  row.className = 'message-row ' + (role === 'user' ? 'user' : 'ai');
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ' + (role === 'user' ? 'user-av' : 'ai-av');
+  avatar.textContent = role === 'user' ? 'A' : '⚖';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble ' + (role === 'user' ? 'user' : 'ai');
+
+  if (role === 'ai') {
+    bubble.innerHTML = marked(text);
+    const copy = document.createElement('button');
+    copy.className = 'copy-btn';
+    copy.textContent = 'Copy';
+    copy.onclick = () => {
+      navigator.clipboard.writeText(text).then(() => {
+        copy.textContent = 'Copied!';
+        setTimeout(() => copy.textContent = 'Copy', 1500);
+      });
+    };
+    bubble.appendChild(copy);
+  } else {
+    bubble.textContent = text;
+  }
+
+  if (role === 'user') {
+    row.appendChild(bubble);
+    row.appendChild(avatar);
+  } else {
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+  }
+
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping() {
+  const tr = document.getElementById('typing-row');
+  tr.style.display = 'flex';
+  document.getElementById('chat-container').scrollTop = 99999;
+}
+
+function hideTyping() {
+  document.getElementById('typing-row').style.display = 'none';
+}
+
+async function sendMessage() {
+  if (isLoading) return;
+  const input = document.getElementById('user-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    showToast('⚠ Please enter your Anthropic API key in the sidebar');
+    document.getElementById('api-key-input').focus();
+    return;
+  }
+
+  appendMessage('user', msg);
+  input.value = '';
+  input.style.height = 'auto';
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+  showTyping();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId, message: msg, api_key: apiKey }),
+    });
+
+    hideTyping();
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
+      appendMessage('ai', `**Error:** ${err.detail || res.statusText}`);
+    } else {
+      const data = await res.json();
+      appendMessage('ai', data.reply);
+    }
+  } catch (e) {
+    hideTyping();
+    appendMessage('ai', `**Network error:** ${e.message}. Make sure the server is running.`);
+  }
+
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+function quickAction(text) {
+  document.getElementById('user-input').value = text;
+  autoResize(document.getElementById('user-input'));
+  sendMessage();
+}
+
+function newChat() {
+  sessionId = generateId();
+  localStorage.setItem('lawapp_session', sessionId);
+  uploadedDocs = [];
+  localStorage.setItem('lawapp_docs', '[]');
+  renderDocList();
+
+  const container = document.getElementById('chat-container');
+  container.innerHTML = `
+    <div id="welcome">
+      <div class="welcome-icon">⚖️</div>
+      <div class="welcome-title">Nyaya Sahayak</div>
+      <div class="welcome-subtitle">
+        Your Indian Law assistant for drafting, procedure, and legal research.
+        Ask anything — vakalatnamas, bail applications, copy applications, court procedures, sections of law.
+      </div>
+      <div class="suggestion-grid">
+        <div class="suggestion-card" onclick="quickAction('Draft a complete Vakalatnama for District Court — Civil matter.')">
+          <div class="s-icon">📜</div>
+          <div class="s-title">Draft Vakalatnama</div>
+          <div class="s-desc">District / High Court formats</div>
+        </div>
+        <div class="suggestion-card" onclick="quickAction('Draft a Bail Application under Section 437 CrPC for a Sessions case.')">
+          <div class="s-icon">🔓</div>
+          <div class="s-title">Bail Application</div>
+          <div class="s-desc">Regular & Anticipatory Bail</div>
+        </div>
+        <div class="suggestion-card" onclick="quickAction('Draft a Copy Application for obtaining certified copy of judgment from District Court.')">
+          <div class="s-icon">📋</div>
+          <div class="s-title">Copy Application</div>
+          <div class="s-desc">Judgments, orders, FIR copies</div>
+        </div>
+        <div class="suggestion-card" onclick="quickAction('What is the procedure and format for filing a Writ Petition in the High Court?')">
+          <div class="s-icon">🏛️</div>
+          <div class="s-title">Writ Petition Guide</div>
+          <div class="s-desc">HC procedure & format</div>
+        </div>
+        <div class="suggestion-card" onclick="quickAction('Explain important limitation periods under the Limitation Act 1963 for civil suits and appeals.')">
+          <div class="s-icon">⏱️</div>
+          <div class="s-title">Limitation Periods</div>
+          <div class="s-desc">Key periods for suits & appeals</div>
+        </div>
+        <div class="suggestion-card" onclick="quickAction('Summarise Bar Council of India Rules on professional conduct for advocates.')">
+          <div class="s-icon">👔</div>
+          <div class="s-title">Professional Conduct</div>
+          <div class="s-desc">BCI Rules & ethics</div>
+        </div>
+      </div>
+    </div>`;
+  showToast('New chat started');
+}
+
+// ---- DOCUMENT UPLOAD ----
+async function uploadFiles(files) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    showToast('⚠ Enter API key before uploading');
+    return;
+  }
+
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('session_id', sessionId);
+
+    showToast(`Uploading ${file.name}...`);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        uploadedDocs.push(file.name);
+        localStorage.setItem('lawapp_docs', JSON.stringify(uploadedDocs));
+        renderDocList();
+        showToast(`✓ ${file.name} attached (${(data.chars/1000).toFixed(1)}k chars)`);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(`✗ ${err.detail || 'Upload failed'}`);
+      }
+    } catch (e) {
+      showToast(`✗ Upload error: ${e.message}`);
+    }
+  }
+
+  document.getElementById('file-input').value = '';
+}
+
+function renderDocList() {
+  const list = document.getElementById('doc-list');
+  list.innerHTML = '';
+  uploadedDocs.forEach((name, i) => {
+    const item = document.createElement('div');
+    item.className = 'doc-item';
+    item.innerHTML = `
+      <span class="doc-item-name" title="${name}">📄 ${name}</span>
+      <span class="doc-remove" onclick="removeDoc(${i})" title="Remove">✕</span>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function removeDoc(i) {
+  uploadedDocs.splice(i, 1);
+  localStorage.setItem('lawapp_docs', JSON.stringify(uploadedDocs));
+  renderDocList();
+}
+
+async function clearDocs() {
+  await fetch(`/api/documents/${sessionId}`, { method: 'DELETE' });
+  uploadedDocs = [];
+  localStorage.setItem('lawapp_docs', '[]');
+  renderDocList();
+  showToast('Documents cleared');
+}
+
+renderDocList();
+
+// ---- MINIMAL MARKDOWN RENDERER ----
+function marked(text) {
+  // Escape HTML first (for user safety)
+  const escape = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  let html = text;
+
+  // Code blocks
+  html = html.replace(/```[\w]*\n?([\s\S]*?)```/g, (_, code) =>
+    `<pre><code>${escape(code.trim())}</code></pre>`);
+
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, (_, c) => `<code>${escape(c)}</code>`);
+
+  // Headers
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // Bold + Italic
+  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+  html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+
+  // Blockquotes
+  html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // HR
+  html = html.replace(/^---+$/gm, '<hr>');
+
+  // Tables (basic)
+  html = html.replace(/(\|.+\|\n)+/g, (table) => {
+    const rows = table.trim().split('\n').filter(r => r.trim());
+    let out = '<table>';
+    rows.forEach((row, i) => {
+      if (row.match(/^\|[-| :]+\|$/)) return;
+      const cells = row.split('|').filter((_, ci) => ci > 0 && ci < row.split('|').length - 1);
+      const tag = i === 0 ? 'th' : 'td';
+      out += '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+    });
+    out += '</table>';
+    return out;
+  });
+
+  // Lists
+  html = html.replace(/^(\s*[-*+] .+\n?)+/gm, (block) => {
+    const items = block.trim().split('\n').map(line =>
+      `<li>${line.replace(/^\s*[-*+] /, '')}</li>`).join('');
+    return `<ul>${items}</ul>`;
+  });
+
+  html = html.replace(/^(\s*\d+\. .+\n?)+/gm, (block) => {
+    const items = block.trim().split('\n').map(line =>
+      `<li>${line.replace(/^\s*\d+\. /, '')}</li>`).join('');
+    return `<ol>${items}</ol>`;
+  });
+
+  // Paragraphs
+  html = html.split(/\n{2,}/).map(block => {
+    block = block.trim();
+    if (!block) return '';
+    if (/^<(h[1-6]|ul|ol|pre|table|blockquote|hr)/.test(block)) return block;
+    return `<p>${block.replace(/\n/g, '<br>')}</p>`;
+  }).join('\n');
+
+  return html;
+}
+</script>
+</body>
+</html>
