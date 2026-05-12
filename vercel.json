@@ -3,21 +3,17 @@
   "builds": [
     {
       "src": "api/index.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "includeFiles": ["index.html", "profilephoto.png"]
+      }
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/profilephoto.png",
-      "dest": "/profilephoto.png"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "api/index.py"
     }
   ]
 }

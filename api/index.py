@@ -6,7 +6,7 @@ from typing import Optional
 
 import anthropic
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 try:
@@ -180,6 +180,19 @@ def get_session(session_id: str) -> dict:
     if session_id not in sessions:
         sessions[session_id] = {"messages": [], "documents": []}
     return sessions[session_id]
+
+
+ROOT = Path(__file__).parent.parent
+
+
+@app.get("/")
+async def root():
+    return HTMLResponse(content=(ROOT / "index.html").read_text())
+
+
+@app.get("/profilephoto.png")
+async def profile_photo():
+    return Response(content=(ROOT / "profilephoto.png").read_bytes(), media_type="image/png")
 
 
 @app.post("/api/upload")
